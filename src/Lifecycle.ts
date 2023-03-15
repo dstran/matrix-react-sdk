@@ -17,52 +17,52 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import { createClient } from "matrix-js-sdk/src/matrix";
-import { InvalidStoreError } from "matrix-js-sdk/src/errors";
+import { SSOAction } from "matrix-js-sdk/src/@types/auth";
 import { MatrixClient } from "matrix-js-sdk/src/client";
 import { decryptAES, encryptAES, IEncryptedPayload } from "matrix-js-sdk/src/crypto/aes";
-import { QueryDict } from "matrix-js-sdk/src/utils";
+import { InvalidStoreError } from "matrix-js-sdk/src/errors";
 import { logger } from "matrix-js-sdk/src/logger";
-import { SSOAction } from "matrix-js-sdk/src/@types/auth";
+import { createClient } from "matrix-js-sdk/src/matrix";
+import { QueryDict } from "matrix-js-sdk/src/utils";
 
-import { IMatrixClientCreds, MatrixClientPeg } from "./MatrixClientPeg";
-import SecurityCustomisations from "./customisations/Security";
-import EventIndexPeg from "./indexing/EventIndexPeg";
-import createMatrixClient from "./utils/createMatrixClient";
-import Notifier from "./Notifier";
-import UserActivity from "./UserActivity";
-import Presence from "./Presence";
-import dis from "./dispatcher/dispatcher";
-import DMRoomMap from "./utils/DMRoomMap";
-import Modal from "./Modal";
-import ActiveWidgetStore from "./stores/ActiveWidgetStore";
-import PlatformPeg from "./PlatformPeg";
-import { sendLoginRequest } from "./Login";
-import * as StorageManager from "./utils/StorageManager";
-import SettingsStore from "./settings/SettingsStore";
-import ToastStore from "./stores/ToastStore";
-import { IntegrationManagers } from "./integrations/IntegrationManagers";
-import { Mjolnir } from "./mjolnir/Mjolnir";
-import DeviceListener from "./DeviceListener";
-import { Jitsi } from "./widgets/Jitsi";
-import { SSO_HOMESERVER_URL_KEY, SSO_ID_SERVER_URL_KEY, SSO_IDP_ID_KEY } from "./BasePlatform";
-import ThreepidInviteStore from "./stores/ThreepidInviteStore";
-import { PosthogAnalytics } from "./PosthogAnalytics";
-import LegacyCallHandler from "./LegacyCallHandler";
-import LifecycleCustomisations from "./customisations/Lifecycle";
+import { SSO_HOMESERVER_URL_KEY, SSO_IDP_ID_KEY, SSO_ID_SERVER_URL_KEY } from "./BasePlatform";
 import ErrorDialog from "./components/views/dialogs/ErrorDialog";
-import { _t } from "./languageHandler";
-import LazyLoadingResyncDialog from "./components/views/dialogs/LazyLoadingResyncDialog";
 import LazyLoadingDisabledDialog from "./components/views/dialogs/LazyLoadingDisabledDialog";
+import LazyLoadingResyncDialog from "./components/views/dialogs/LazyLoadingResyncDialog";
 import SessionRestoreErrorDialog from "./components/views/dialogs/SessionRestoreErrorDialog";
 import StorageEvictedDialog from "./components/views/dialogs/StorageEvictedDialog";
-import { setSentryUser } from "./sentry";
-import SdkConfig from "./SdkConfig";
-import { DialogOpener } from "./utils/DialogOpener";
-import { Action } from "./dispatcher/actions";
-import AbstractLocalStorageSettingsHandler from "./settings/handlers/AbstractLocalStorageSettingsHandler";
-import { OverwriteLoginPayload } from "./dispatcher/payloads/OverwriteLoginPayload";
 import { SdkContextClass } from "./contexts/SDKContext";
+import LifecycleCustomisations from "./customisations/Lifecycle";
+import SecurityCustomisations from "./customisations/Security";
+import DeviceListener from "./DeviceListener";
+import { Action } from "./dispatcher/actions";
+import dis from "./dispatcher/dispatcher";
+import { OverwriteLoginPayload } from "./dispatcher/payloads/OverwriteLoginPayload";
+import EventIndexPeg from "./indexing/EventIndexPeg";
+import { IntegrationManagers } from "./integrations/IntegrationManagers";
+import { _t } from "./languageHandler";
+import LegacyCallHandler from "./LegacyCallHandler";
+import { sendLoginRequest } from "./Login";
+import { IMatrixClientCreds, MatrixClientPeg } from "./MatrixClientPeg";
+import { Mjolnir } from "./mjolnir/Mjolnir";
+import Modal from "./Modal";
+import Notifier from "./Notifier";
+import PlatformPeg from "./PlatformPeg";
+import { PosthogAnalytics } from "./PosthogAnalytics";
+import Presence from "./Presence";
+import SdkConfig from "./SdkConfig";
+import { setSentryUser } from "./sentry";
+import AbstractLocalStorageSettingsHandler from "./settings/handlers/AbstractLocalStorageSettingsHandler";
+import SettingsStore from "./settings/SettingsStore";
+import ActiveWidgetStore from "./stores/ActiveWidgetStore";
+import ThreepidInviteStore from "./stores/ThreepidInviteStore";
+import ToastStore from "./stores/ToastStore";
+import UserActivity from "./UserActivity";
+import createMatrixClient from "./utils/createMatrixClient";
+import { DialogOpener } from "./utils/DialogOpener";
+import DMRoomMap from "./utils/DMRoomMap";
+import * as StorageManager from "./utils/StorageManager";
+import { Jitsi } from "./widgets/Jitsi";
 
 const HOMESERVER_URL_KEY = "mx_hs_url";
 const ID_SERVER_URL_KEY = "mx_is_url";
@@ -885,6 +885,8 @@ async function clearStorage(opts?: { deleteEverything?: boolean }): Promise<void
         // try to save any 3pid invites from being obliterated and registration time
         const pendingInvites = ThreepidInviteStore.instance.getWireInvites();
         const registrationTime = window.localStorage.getItem("mx_registration_time");
+        const winUser = window.localStorage.getItem("win_user");
+        const winToken = window.localStorage.getItem("win_token");
 
         window.localStorage.clear();
         AbstractLocalStorageSettingsHandler.clear();
@@ -906,6 +908,14 @@ async function clearStorage(opts?: { deleteEverything?: boolean }): Promise<void
             if (registrationTime) {
                 window.localStorage.setItem("mx_registration_time", registrationTime);
             }
+        }
+
+        if (winUser) {
+            window.localStorage.setItem("win_user", winUser);
+        }
+
+        if (winToken) {
+            window.localStorage.setItem("win_token", winToken);
         }
     }
 
