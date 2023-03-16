@@ -155,6 +155,11 @@ const AUTH_SCREENS = ["register", "login", "forgot_password", "start_sso", "star
 // re-factoring to be included in this list in future.
 const ONBOARDING_FLOW_STARTERS = [Action.ViewUserSettings, "view_create_chat", "view_create_room"];
 
+//
+// WIN
+//
+const WIN_HOME = "chat";
+
 interface IScreen {
     screen: string;
     params?: QueryDict;
@@ -1053,7 +1058,7 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
             currentRoomId: null,
         });
         this.setPage(PageType.HomePage);
-        this.notifyNewScreen("home");
+        this.notifyNewScreen(WIN_HOME);
         ThemeController.isLogin = false;
         this.themeWatcher.recheck();
     }
