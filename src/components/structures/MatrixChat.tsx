@@ -101,7 +101,8 @@ import Welcome from "../views/auth/Welcome";
 import ForgotPassword from "./auth/ForgotPassword";
 import E2eSetup from "./auth/E2eSetup";
 import Registration from "./auth/Registration";
-import Login from "./auth/Login";
+// import Login from "./auth/Login";
+import Login from '../../Login';
 import ErrorBoundary from "../views/elements/ErrorBoundary";
 import VerificationRequestToast from "../views/toasts/VerificationRequestToast";
 import PerformanceMonitor, { PerformanceEntryNames } from "../../performance";
@@ -223,6 +224,8 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
         config: {},
         onTokenLoginCompleted: (): void => {},
     };
+
+    private loginLogic: Login;
 
     private firstSyncComplete = false;
     private firstSyncPromise: IDeferred<void>;
@@ -353,6 +356,20 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
         }
 
         initSentry(SdkConfig.get("sentry"));
+
+        this.initLoginLogic();
+    }
+
+    //
+    // WIN:
+    //
+    private initLoginLogic(): void {
+        const fallbackHsUrl = this.getFallbackHsUrl();
+        const config = this.getServerProperties();
+        this.loginLogic = new Login(config.serverConfig.hsUrl,
+            config.serverConfig.isUrl, fallbackHsUrl, {
+                defaultDeviceDisplayName: this.props.defaultDeviceDisplayName
+            });
     }
 
     private async postLoginSetup(): Promise<void> {
@@ -1873,6 +1890,29 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
         this.setPageSubtitle();
     }
 
+    //
+    // WIN:
+    //
+    public loginNoUI = (username: string, password: string): void => {
+        this.loginLogic.loginViaPassword(username, "", "", password).then(
+            (data) => {
+                console.log('==== WIN ====+>', data);
+                this.onUserCompletedLoginFlow(data, 'bzX753*!67ps');
+            },
+            (error) => {
+                console.error('===== WIN =====+>', error);
+            });
+    }
+
+    //
+    // WIN:
+    //
+    public logoutNoUI = (): void => {
+        dis.dispatch({
+            action: "logout",
+        });
+    }
+
     private onLogoutClick(event: React.MouseEvent<HTMLAnchorElement, MouseEvent>): void {
         dis.dispatch({
             action: "logout",
@@ -2109,20 +2149,21 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
                 />
             );
         } else if (this.state.view === Views.LOGIN) {
-            const showPasswordReset = SettingsStore.getValue(UIFeature.PasswordReset);
+            // const showPasswordReset = SettingsStore.getValue(UIFeature.PasswordReset);
             view = (
-                <Login
-                    isSyncing={this.state.pendingInitialSync}
-                    onLoggedIn={this.onUserCompletedLoginFlow}
-                    onRegisterClick={this.onRegisterClick}
-                    fallbackHsUrl={this.getFallbackHsUrl()}
-                    defaultDeviceDisplayName={this.props.defaultDeviceDisplayName}
-                    onForgotPasswordClick={showPasswordReset ? this.onForgotPasswordClick : undefined}
-                    onServerConfigChange={this.onServerConfigChange}
-                    fragmentAfterLogin={fragmentAfterLogin}
-                    defaultUsername={this.props.startingFragmentQueryParams.defaultUsername as string}
-                    {...this.getServerProperties()}
-                />
+                <div />
+                // <Login
+                //     isSyncing={this.state.pendingInitialSync}
+                //     onLoggedIn={this.onUserCompletedLoginFlow}
+                //     onRegisterClick={this.onRegisterClick}
+                //     fallbackHsUrl={this.getFallbackHsUrl()}
+                //     defaultDeviceDisplayName={this.props.defaultDeviceDisplayName}
+                //     onForgotPasswordClick={showPasswordReset ? this.onForgotPasswordClick : undefined}
+                //     onServerConfigChange={this.onServerConfigChange}
+                //     fragmentAfterLogin={fragmentAfterLogin}
+                //     defaultUsername={this.props.startingFragmentQueryParams.defaultUsername as string}
+                //     {...this.getServerProperties()}
+                // />
             );
         } else if (this.state.view === Views.SOFT_LOGOUT) {
             view = (
