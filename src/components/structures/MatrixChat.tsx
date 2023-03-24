@@ -156,9 +156,9 @@ const AUTH_SCREENS = ["register", "login", "forgot_password", "start_sso", "star
 const ONBOARDING_FLOW_STARTERS = [Action.ViewUserSettings, "view_create_chat", "view_create_room"];
 
 //
-// WIN
+// CUSTOM
 //
-const WIN_HOME = "chat";
+const CUSTOM_HOME = "chat";
 
 interface IScreen {
     screen: string;
@@ -366,7 +366,7 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
     }
 
     //
-    // WIN:
+    // CUSTOM:
     //
     private initLoginLogic(): void {
         const fallbackHsUrl = this.getFallbackHsUrl();
@@ -1058,7 +1058,7 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
             currentRoomId: null,
         });
         this.setPage(PageType.HomePage);
-        this.notifyNewScreen(WIN_HOME);
+        this.notifyNewScreen(CUSTOM_HOME);
         ThemeController.isLogin = false;
         this.themeWatcher.recheck();
     }
@@ -1896,21 +1896,21 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
     }
 
     //
-    // WIN:
+    // CUSTOM:
     //
     public loginNoUI = (username: string, password: string): void => {
         this.loginLogic.loginViaPassword(username, "", "", password).then(
             (data) => {
-                console.log('==== WIN ====+>', data);
+                console.log('==== CUSTOM ====+>', data);
                 this.onUserCompletedLoginFlow(data, 'bzX753*!67ps');
             },
             (error) => {
-                console.error('===== WIN =====+>', error);
+                console.error('===== CUSTOM =====+>', error);
             });
     }
 
     //
-    // WIN:
+    // CUSTOM:
     //
     public logoutNoUI = (): void => {
         dis.dispatch({
